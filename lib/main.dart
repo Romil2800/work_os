@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:work_os/screens/auth/login.dart';
+import 'package:work_os/screens/tasts_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Color(0xFFEDE7DC),
         primarySwatch: Colors.blue,
       ),
-      home: Login(),
+      home: TasksScreen(),
     );
   }
 }

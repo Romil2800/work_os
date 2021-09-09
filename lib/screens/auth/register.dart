@@ -1,29 +1,37 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:work_os/screens/auth/forget_pass.dart';
-import 'package:work_os/screens/auth/register.dart';
 
-class Login extends StatefulWidget {
+class SignUp extends StatefulWidget {
   @override
-  _LoginState createState() => _LoginState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _LoginState extends State<Login> with TickerProviderStateMixin {
+class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
   late TextEditingController _emailTextController = TextEditingController();
   late TextEditingController _passTextController = TextEditingController();
+  late TextEditingController _positionCPTextController =
+      TextEditingController();
+  late TextEditingController _fullNameTextController = TextEditingController();
   bool _obsecureText = true;
-  final _loginFormKey = GlobalKey<FormState>();
-  FocusNode _passFocusNode = FocusNode();
+  final _signUpFormKey = GlobalKey<FormState>();
+
+  FocusNode _emailFocusNode = FocusNode();
+  FocusNode _passwordFocusNode = FocusNode();
+  FocusNode _positionCPFocusNode = FocusNode();
 
   @override
   void dispose() {
     _animationController.dispose();
     _emailTextController.dispose();
     _passTextController.dispose();
-    _passFocusNode.dispose();
+    _fullNameTextController.dispose();
+    _positionCPTextController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _positionCPFocusNode.dispose();
     super.dispose();
   }
 
@@ -46,8 +54,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     super.initState();
   }
 
-  void _submitFormLogin() {
-    final isValid = _loginFormKey.currentState!.validate();
+  void _submitFormSignUp() {
+    final isValid = _signUpFormKey.currentState!.validate();
     if (isValid) {}
   }
 
@@ -79,7 +87,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                   height: size.height * 0.1,
                 ),
                 Text(
-                  'Login',
+                  'Sign Up',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -93,7 +101,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Don\'t have an account?',
+                        text: 'Already have an account?',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -104,12 +112,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                       TextSpan(
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SignUp()));
+                            Navigator.pop(context);
                           },
-                        text: 'Register',
+                        text: 'Login',
                         style: TextStyle(
                           decoration: TextDecoration.underline,
                           color: Colors.blue.shade300,
@@ -124,13 +129,48 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                   height: 40,
                 ),
                 Form(
-                  key: _loginFormKey,
+                  key: _signUpFormKey,
                   child: Column(
                     children: [
                       TextFormField(
+                          textInputAction: TextInputAction.next,
+                        onEditingComplete: () => FocusScope.of(context)
+                            .requestFocus(_emailFocusNode),
+                        keyboardType: TextInputType.name,
+                        controller: _fullNameTextController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Thus field is missing';
+                          }
+                        },
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Full Name',
+                          hintStyle: TextStyle(color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
                         textInputAction: TextInputAction.next,
-                        onEditingComplete: () =>
-                            FocusScope.of(context).requestFocus(_passFocusNode),
+                        onEditingComplete: () =>FocusScope.of(context).requestFocus(_passwordFocusNode) ,
+                        focusNode: _emailFocusNode,
                         keyboardType: TextInputType.emailAddress,
                         controller: _emailTextController,
                         validator: (value) {
@@ -163,9 +203,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                         height: 20,
                       ),
                       TextFormField(
-                        textInputAction: TextInputAction.next,
-                        onEditingComplete: () => _submitFormLogin(),
-                        focusNode: _passFocusNode,
+                         textInputAction: TextInputAction.next,
+                        onEditingComplete: () => FocusScope.of(context)
+                            .requestFocus(_positionCPFocusNode),
+                        focusNode: _passwordFocusNode,
                         obscureText: _obsecureText,
                         keyboardType: TextInputType.visiblePassword,
                         controller: _passTextController,
@@ -210,21 +251,37 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ForgetPasswordScreen(),
-                                ));
-                          },
-                          child: Text(
-                            'Forget password?',
-                            style: TextStyle(
-                              fontSize: 17,
-                              decoration: TextDecoration.underline,
+                      SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                         textInputAction: TextInputAction.next,
+                        onEditingComplete: () => _submitFormSignUp(),
+                        focusNode: _positionCPFocusNode,
+                        keyboardType: TextInputType.name,
+                        controller: _positionCPTextController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'This field is missing';
+                          }
+                        },
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Position of the company',
+                          hintStyle: TextStyle(color: Colors.white),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                            ),
+                          ),
+                          errorBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.red,
                             ),
                           ),
                         ),
@@ -233,10 +290,10 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                   ),
                 ),
                 SizedBox(
-                  height: 40,
+                  height: 80,
                 ),
                 MaterialButton(
-                  onPressed: _submitFormLogin,
+                  onPressed: _submitFormSignUp,
                   color: Colors.pink.shade700,
                   elevation: 8,
                   shape: RoundedRectangleBorder(
@@ -248,7 +305,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Login',
+                          'Sign Up',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -259,7 +316,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                           width: 8,
                         ),
                         Icon(
-                          Icons.login,
+                          Icons.person_add,
                           color: Colors.white,
                         ),
                       ],
