@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:work_os/constants/constants.dart';
+import 'package:work_os/inner_screens/profile.dart';
+import 'package:work_os/inner_screens/upload_task.dart';
+import 'package:work_os/screens/all_workers.dart';
+import 'package:work_os/screens/tasts_screen.dart';
 
 class DrawerWidget extends StatefulWidget {
   @override
@@ -39,22 +43,30 @@ class _DrawerWidgetState extends State<DrawerWidget> {
           ),
           _listTiles(
             'All Tasks',
-            () {},
+            () {
+              _navigateToAllTasksScreen(context);
+            },
             Icons.task_outlined,
           ),
           _listTiles(
             'My Account',
-            () {},
+            () {
+              _navigateToProfileScreen(context);
+            },
             Icons.settings_outlined,
           ),
           _listTiles(
             'Registered Workers',
-            () {},
+            () {
+              _navigateToAllWorkersScreen(context);
+            },
             Icons.workspaces_outline,
           ),
           _listTiles(
             'Add Tasks',
-            () {},
+            () {
+              _navigateToAddTaskScreen(context);
+            },
             Icons.add_task,
           ),
           Divider(
@@ -70,6 +82,26 @@ class _DrawerWidgetState extends State<DrawerWidget> {
         ],
       ),
     );
+  }
+
+  void _navigateToAddTaskScreen(context) {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => UploadTask()));
+  }
+
+  void _navigateToProfileScreen(context) {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+  }
+
+  void _navigateToAllTasksScreen(context) {
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => TasksScreen()));
+  }
+
+  void _navigateToAllWorkersScreen(context) {
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => AllWorkersScreen()));
   }
 
   void _logout(context) {

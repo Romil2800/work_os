@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:work_os/constants/constants.dart';
+import 'package:work_os/inner_screens/task_details.dart';
 
 class TaskWidget extends StatefulWidget {
   const TaskWidget({Key? key}) : super(key: key);
@@ -15,7 +16,10 @@ class _TaskWidgetState extends State<TaskWidget> {
       elevation: 8,
       margin: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       child: ListTile(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => TaskDetailsScreen()));
+        },
         onLongPress: () {
           _deleteDialog();
         },
@@ -41,7 +45,7 @@ class _TaskWidgetState extends State<TaskWidget> {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color:Constants.darkBlue,
+            color: Constants.darkBlue,
           ),
         ),
         subtitle: Column(

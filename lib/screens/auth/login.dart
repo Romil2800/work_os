@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:work_os/screens/auth/forget_pass.dart';
@@ -17,6 +18,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   bool _obsecureText = true;
   final _loginFormKey = GlobalKey<FormState>();
   FocusNode _passFocusNode = FocusNode();
+  bool _isLoading = false;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -46,9 +49,27 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
     super.initState();
   }
 
-  void _submitFormLogin() {
+  void _submitFormLogin() async {
     final isValid = _loginFormKey.currentState!.validate();
-    if (isValid) {}
+    if (isValid) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _auth.signInWithEmailAndPassword(
+            email: _emailTextController.text.trim().toLowerCase(),
+            password: _passTextController.text.trim());
+      } catch (error) {
+        setState(() {
+          _isLoading = false;
+        });
+     // _showErrorDialog(error.toString());
+      }
+    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
