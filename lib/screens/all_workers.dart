@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:work_os/constants/constants.dart';
 import 'package:work_os/screens/widgets/all_workers_widgets.dart';
@@ -14,42 +16,70 @@ class _AllWorkersScreenState extends State<AllWorkersScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      drawer: DrawerWidget(),
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
+        drawer: DrawerWidget(),
+        appBar: AppBar(
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: Icon(
+                  Icons.menu,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ),
+          elevation: 0,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Text(
+            'All Workers',
+            style: TextStyle(color: Colors.blue),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {},
               icon: Icon(
-                Icons.menu,
+                Icons.filter_list_outlined,
                 color: Colors.black,
               ),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
+            )
+          ],
+        ),
+        body: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('users').snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.connectionState == ConnectionState.active) {
+              if (snapshot.data!.docs.isNotEmpty) {
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    return AllWorkersWidget(
+                      userId: snapshot.data!.docs[index]['id'],
+                      userName: snapshot.data!.docs[index]['name'],
+                      userEmail: snapshot.data!.docs[index]['email'],
+                      phoneNumber: snapshot.data!.docs[index]['phoneNumber'],
+                      positionInCompany: snapshot.data!.docs[index]['positionInCompany'],
+                      userImageUrl: snapshot.data!.docs[index]['userImage'],
+                    );
+                  },
+                );
+              }
+            } else {
+              return Center(
+                child: Text('There is no users'),
+              );
+            }
+            return Center(
+              child: Text(
+                'Something went wrong',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+              ),
             );
           },
-        ),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text(
-          'All Workers',
-          style: TextStyle(color: Colors.blue),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.filter_list_outlined,
-              color: Colors.black,
-            ),
-          )
-        ],
-      ),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          return AllWorkersWidget();
-        },
-      ),
-    );
+        ));
   }
 }

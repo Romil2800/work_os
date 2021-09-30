@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:work_os/screens/auth/forget_pass.dart';
 import 'package:work_os/screens/auth/register.dart';
+import 'package:work_os/services/global_methods.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -60,11 +61,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         await _auth.signInWithEmailAndPassword(
             email: _emailTextController.text.trim().toLowerCase(),
             password: _passTextController.text.trim());
+            Navigator.canPop(context) ? Navigator.pop(context) : null;
       } catch (error) {
         setState(() {
           _isLoading = false;
         });
-     // _showErrorDialog(error.toString());
+     GlobalMethods.showErrorDialog(error: error.toString(), ctx: context);
       }
     }
     setState(() {

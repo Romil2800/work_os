@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:work_os/constants/constants.dart';
+import 'package:work_os/services/global_methods.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -29,6 +32,7 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  String? imageUrl;
 
   FocusNode _emailFocusNode = FocusNode();
   FocusNode _passwordFocusNode = FocusNode();
@@ -72,6 +76,12 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
   void _submitFormSignUp() async {
     final isValid = _signUpFormKey.currentState!.validate();
     if (isValid) {
+      if (imageFile == null) {
+        GlobalMethods.showErrorDialog(
+            error: 'please pick an image', ctx: context);
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -80,58 +90,34 @@ class _SignUpState extends State<SignUp> with TickerProviderStateMixin {
         await _auth.createUserWithEmailAndPassword(
             email: _emailTextController.text.trim().toLowerCase(),
             password: _passTextController.text.trim());
+        final User? user = _auth.currentUser;
+        final _uid = user!.uid;
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('userImages')
+            .child(_uid + '.jpg');
+        await ref.putFile(imageFile!);
+        imageUrl = await ref.getDownloadURL();
+        FirebaseFirestore.instance.collection('users').doc(_uid).set({
+          'id': _uid,
+          'name': _fullNameTextController.text,
+          'email': _emailTextController.text,
+          'userImage': imageUrl,
+          'phoneNumber': _phoneNumberTextController.text,
+          'positionInCompany': _positionCPTextController.text,
+          'createdAt': Timestamp.now(),
+        });
+        Navigator.canPop(context) ? Navigator.pop(context) : null;
       } catch (error) {
         setState(() {
           _isLoading = false;
         });
-        _showErrorDialog(error.toString());
+        GlobalMethods.showErrorDialog(error: error.toString(), ctx: context);
       }
     }
     setState(() {
       _isLoading = false;
     });
-  }
-
-  void _showErrorDialog(error) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Image.network(
-                'https://cdn-icons-png.flaticon.com/512/158/158730.png',
-                height: 20,
-                width: 20,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: const Text(
-                  'Error Occured',
-                ),
-              )
-            ],
-          ),
-          content: Text(
-            error,
-            style: TextStyle(
-              color: Constants.darkBlue,
-              fontSize: 20,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Ok'),
-            ),
-            
-          ],
-        );
-      },
-    );
   }
 
   @override

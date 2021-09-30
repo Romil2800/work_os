@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:work_os/constants/constants.dart';
 import 'package:work_os/inner_screens/profile.dart';
 import 'package:work_os/inner_screens/upload_task.dart';
 import 'package:work_os/screens/all_workers.dart';
 import 'package:work_os/screens/tasts_screen.dart';
+import 'package:work_os/user_state.dart';
 
 class DrawerWidget extends StatefulWidget {
   @override
@@ -90,8 +92,15 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   }
 
   void _navigateToProfileScreen(context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final User? user = _auth.currentUser;
+    final String uid = user!.uid;
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => ProfileScreen(
+                  userId: uid,
+                )));
   }
 
   void _navigateToAllTasksScreen(context) {
@@ -105,6 +114,7 @@ class _DrawerWidgetState extends State<DrawerWidget> {
   }
 
   void _logout(context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
     showDialog(
       context: context,
       builder: (context) {
@@ -135,13 +145,17 @@ class _DrawerWidgetState extends State<DrawerWidget> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.canPop(context) ? Navigator.pop(context) : null;
               },
               child: Text('No'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                _auth.signOut();
+                Navigator.canPop(context) ? Navigator.pop(context) : null;
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return UserState();
+                }));
               },
               child: Text('Yes'),
             )
