@@ -1,9 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:work_os/screens/auth/login.dart';
-import 'package:work_os/screens/tasts_screen.dart';
 import 'package:work_os/user_state.dart';
-import 'screens/auth/register.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

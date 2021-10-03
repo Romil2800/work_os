@@ -1,6 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:work_os/inner_screens/profile.dart';
 
-class CommentWidget extends StatelessWidget {
+class CommentWidget extends StatefulWidget {
+  final String commentId;
+  final String commenterId;
+  final String commenterName;
+  final String commentBody;
+  final String commenterImageUrl;
+
+  const CommentWidget(
+      {required this.commentId,
+      required this.commenterId,
+      required this.commenterName,
+      required this.commentBody,
+      required this.commenterImageUrl});
+  @override
+  _CommentWidgetState createState() => _CommentWidgetState();
+}
+
+class _CommentWidgetState extends State<CommentWidget> {
   List<Color> _colors = [
     Colors.amber,
     Colors.orange,
@@ -10,59 +28,69 @@ class CommentWidget extends StatelessWidget {
     Colors.blue,
     Colors.deepOrange,
   ];
+
   @override
   Widget build(BuildContext context) {
     _colors.shuffle();
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Flexible(
-          flex: 1,
-          child: Container(
-            height: 48,
-            width: 48,
-            decoration: BoxDecoration(
-              border: Border.all(
-                width: 2,
-                color: _colors[0],
-              ),
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                  image: NetworkImage(
-                      'https://cdn-icons-png.flaticon.com/512/1077/1077114.png'),
-                  fit: BoxFit.fill),
+    return InkWell(
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(
+              userId: widget.commenterId,
             ),
           ),
-        ),
-        SizedBox(
-          width: 10,
-        ),
-        Flexible(
-            flex: 5,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Commenter Name',
-                  style: TextStyle(
-                    fontStyle: FontStyle.normal,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
+        );
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Flexible(
+            flex: 1,
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 2,
+                  color: _colors[1],
                 ),
-                Text(
-                  'Comment body',
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.normal,
-                    fontSize: 20,
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                    image: NetworkImage(widget.commenterImageUrl),
+                    fit: BoxFit.fill),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 6,
+          ),
+          Flexible(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.commenterName,
+                    style: TextStyle(
+                        fontStyle: FontStyle.normal,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20),
                   ),
-                ),
-              ],
-            ))
-      ],
+                  Text(
+                    widget.commentBody,
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  )
+                ],
+              ))
+        ],
+      ),
     );
   }
 }

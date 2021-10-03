@@ -1,31 +1,109 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:uuid/uuid.dart';
 import 'package:work_os/constants/constants.dart';
 import 'package:work_os/screens/widgets/comments_widgets.dart';
+import 'package:work_os/services/global_methods.dart';
+
 
 class TaskDetailsScreen extends StatefulWidget {
-  const TaskDetailsScreen({Key? key}) : super(key: key);
+  const TaskDetailsScreen({required this.uploadedBy, required this.taskID});
+  final String uploadedBy;
+  final String taskID;
 
   @override
   _TaskDetailsScreenState createState() => _TaskDetailsScreenState();
 }
 
 class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
-  var _titleStyle = TextStyle(
-    color: Constants.darkBlue,
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-  );
-
-  bool _isCommenting = true;
-
+  var _textstyle = TextStyle(
+      color: Constants.darkBlue, fontSize: 13, fontWeight: FontWeight.normal);
+  var _titlesStyle = TextStyle(
+      color: Constants.darkBlue, fontWeight: FontWeight.bold, fontSize: 20);
   TextEditingController _commentController = TextEditingController();
+  bool _isCommenting = false;
+  String? authorName;
+  String? authorPosition;
+  String? userImageUrl;
+  String? _loggedInUserImageUrl;
+  String? taskCategory;
+  String? taskDescription;
+  String? tasktitle;
+  bool? _isDone;
+  Timestamp? postedDateTimeStamp;
+  Timestamp? deadlineDateTimeStamp;
+  String? postedDate;
+  String? deadlineDate;
+  bool isDeadlineAvailable = false;
+  //Added new
+  String? _loggedUserName;
+  @override
+  void initState() {
+    super.initState();
+    getTaskData();
+  }
+
+  void getTaskData() async {
+    //New to fix the bug
+    User? user = _auth.currentUser;
+    final _uid = user!.uid;
+    final DocumentSnapshot getCommenterInfoDoc =
+        await FirebaseFirestore.instance.collection('users').doc(_uid).get();
+    if (getCommenterInfoDoc == null) {
+      return;
+    } else {
+      setState(() {
+        _loggedUserName = getCommenterInfoDoc.get('name');
+        _loggedInUserImageUrl = getCommenterInfoDoc.get('userImage');
+      });
+    }
+    //
+    final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.uploadedBy)
+        .get();
+    if (userDoc == null) {
+      return;
+    } else {
+      setState(() {
+        authorName = userDoc.get('name');
+        authorPosition = userDoc.get('positionInCompany');
+        userImageUrl = userDoc.get('userImage');
+      });
+    }
+    final DocumentSnapshot taskDatabase = await FirebaseFirestore.instance
+        .collection('tasks')
+        .doc(widget.taskID)
+        .get();
+    if (taskDatabase == null) {
+      return;
+    } else {
+      setState(() {
+        tasktitle = taskDatabase.get('taskTitle');
+        taskDescription = taskDatabase.get('taskDescription');
+        _isDone = taskDatabase.get('isDone');
+        postedDateTimeStamp = taskDatabase.get('createdAt');
+        deadlineDateTimeStamp = taskDatabase.get('deadlineDateTimeStamp');
+        deadlineDate = taskDatabase.get('deadlineDate');
+        var postDate = postedDateTimeStamp!.toDate();
+        postedDate = '${postDate.year}-${postDate.month}-${postDate.day}';
+      });
+
+      var date = deadlineDateTimeStamp!.toDate();
+      isDeadlineAvailable = date.isAfter(DateTime.now());
+    }
+  }
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         iconTheme: IconThemeData(color: Colors.black),
-        elevation: 1,
+        elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         title: TextButton(
           onPressed: () {
@@ -34,10 +112,9 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
           child: Text(
             'Back',
             style: TextStyle(
-              color: Constants.darkBlue,
-              fontSize: 20,
-              fontStyle: FontStyle.italic,
-            ),
+                color: Constants.darkBlue,
+                fontStyle: FontStyle.italic,
+                fontSize: 20),
           ),
         ),
       ),
@@ -48,12 +125,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
               height: 15,
             ),
             Text(
-              'Task title',
+              tasktitle == null ? '' : tasktitle!,
               style: TextStyle(
-                color: Constants.darkBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 30,
-              ),
+                  color: Constants.darkBlue,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 30),
             ),
             SizedBox(
               height: 20,
@@ -68,7 +144,11 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                     children: [
                       Row(
                         children: [
-                          Text('Uploaded by ', style: _titleStyle),
+                          Text('Uploaded by ',
+                              style: TextStyle(
+                                  color: Constants.darkBlue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15)),
                           Spacer(),
                           Container(
                             height: 50,
@@ -80,8 +160,9 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                               ),
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                  image: NetworkImage(
-                                      'https://cdn-icons-png.flaticon.com/512/1077/1077114.png'),
+                                  image: NetworkImage(userImageUrl == null
+                                      ? 'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png'
+                                      : userImageUrl!),
                                   fit: BoxFit.fill),
                             ),
                           ),
@@ -92,38 +173,32 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Uploader Name',
-                                style: TextStyle(
-                                  color: Constants.darkBlue,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.normal,
-                                ),
+                                authorName == null ? '' : authorName!,
+                                style: _textstyle,
                               ),
                               Text(
-                                'Uploader Job',
-                                style: TextStyle(
-                                  color: Constants.darkBlue,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.normal,
-                                ),
+                                authorPosition == null ? '' : authorPosition!,
+                                style: _textstyle,
                               ),
                             ],
-                          ),
+                          )
                         ],
                       ),
                       dividerWidget(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Uploaded on:', style: _titleStyle),
                           Text(
-                            'Date: 02-08-2000',
-                            style: TextStyle(
-                              color: Constants.darkBlue,
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                            ),
+                            'Uploaded on:',
+                            style: _titlesStyle,
                           ),
+                          Text(
+                            postedDate == null ? '' : postedDate!,
+                            style: TextStyle(
+                                color: Constants.darkBlue,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 15),
+                          )
                         ],
                       ),
                       SizedBox(
@@ -132,15 +207,17 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Deadline Date:', style: _titleStyle),
                           Text(
-                            'Date: 02-08-2000',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                            ),
+                            'Deadline date:',
+                            style: _titlesStyle,
                           ),
+                          Text(
+                            deadlineDate == null ? '' : deadlineDate!,
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.normal,
+                                fontSize: 15),
+                          )
                         ],
                       ),
                       SizedBox(
@@ -148,36 +225,62 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                       ),
                       Center(
                         child: Text(
-                          'still have time',
+                          isDeadlineAvailable
+                              ? 'Deadline is not finished yet'
+                              : ' Deadline passed',
                           style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                          ),
+                              color: isDeadlineAvailable
+                                  ? Colors.green
+                                  : Colors.red,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 15),
                         ),
                       ),
                       dividerWidget(),
-                      Text('Done State:', style: _titleStyle),
+                      Text(
+                        'Done state:',
+                        style: _titlesStyle,
+                      ),
                       SizedBox(
                         height: 15,
                       ),
                       Row(
                         children: [
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              User? user = _auth.currentUser;
+                              final _uid = user!.uid;
+                              if (_uid == widget.uploadedBy) {
+                                try {
+                                  FirebaseFirestore.instance
+                                      .collection('tasks')
+                                      .doc(widget.taskID)
+                                      .update({'isDone': true});
+                                } catch (err) {
+                                  GlobalMethods.showErrorDialog(
+                                      error: 'Action cant be performed',
+                                      ctx: context);
+                                }
+                              } else {
+                                GlobalMethods.showErrorDialog(
+                                    error: 'You cant perform this action',
+                                    ctx: context);
+                              }
+
+                              getTaskData();
+                            },
                             child: Text(
                               'Done',
                               style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                color: Constants.darkBlue,
-                                fontSize: 18,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.normal,
-                              ),
+                                  fontStyle: FontStyle.italic,
+                                  decoration: TextDecoration.underline,
+                                  color: Constants.darkBlue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.normal),
                             ),
                           ),
                           Opacity(
-                            opacity: 0,
+                            opacity: _isDone == true ? 1 : 0,
                             child: Icon(
                               Icons.check_box,
                               color: Colors.green,
@@ -187,45 +290,61 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                             width: 40,
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              User? user = _auth.currentUser;
+                              final _uid = user!.uid;
+                              if (_uid == widget.uploadedBy) {
+                                try {
+                                  FirebaseFirestore.instance
+                                      .collection('tasks')
+                                      .doc(widget.taskID)
+                                      .update({'isDone': false});
+                                } catch (err) {
+                                  GlobalMethods.showErrorDialog(
+                                      error: 'Action cant be performed',
+                                      ctx: context);
+                                }
+                              } else {
+                                GlobalMethods.showErrorDialog(
+                                    error: 'You cant perform this action',
+                                    ctx: context);
+                              }
+
+                              getTaskData();
+                            },
                             child: Text(
                               'Not Done',
                               style: TextStyle(
-                                decoration: TextDecoration.underline,
-                                color: Constants.darkBlue,
-                                fontSize: 18,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.normal,
-                              ),
+                                  fontStyle: FontStyle.italic,
+                                  decoration: TextDecoration.underline,
+                                  color: Constants.darkBlue,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.normal),
                             ),
                           ),
                           Opacity(
-                            opacity: 1,
+                            opacity: _isDone == false ? 1 : 0,
                             child: Icon(
                               Icons.check_box,
                               color: Colors.red,
                             ),
-                          ),
+                          )
                         ],
                       ),
                       dividerWidget(),
                       Text(
-                        'Task Description: ',
-                        style: _titleStyle,
+                        'Task Description',
+                        style: _titlesStyle,
                       ),
                       SizedBox(
                         height: 10,
                       ),
                       Text(
-                        'Uploader Job: ',
-                        style: TextStyle(
-                          color: Constants.darkBlue,
-                          fontSize: 15,
-                          fontWeight: FontWeight.normal,
-                        ),
+                        taskDescription == null ? '' : taskDescription!,
+                        style: _textstyle,
                       ),
                       SizedBox(
-                        height: 10,
+                        height: 40,
                       ),
                       AnimatedSwitcher(
                         duration: Duration(
@@ -237,7 +356,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                                 children: [
                                   Flexible(
                                     flex: 3,
-                                    child: TextFormField(
+                                    child: TextField(
                                       controller: _commentController,
                                       style:
                                           TextStyle(color: Constants.darkBlue),
@@ -264,33 +383,79 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
+                                            horizontal: 8),
                                         child: MaterialButton(
-                                          onPressed: () {},
+                                          onPressed: () async {
+                                            if (_commentController.text.length <
+                                                7) {
+                                              GlobalMethods.showErrorDialog(
+                                                  error:
+                                                      'Comment cant be less than 7 characteres',
+                                                  ctx: context);
+                                            } else {
+                                              User? user = _auth.currentUser;
+                                              final _uid = user!.uid;
+                                              // print('Uid is $_uid');
+                                              // print(
+                                              //     'uploaded by id is ${widget.uploadedBy}');
+
+                                              final _generatedId = Uuid().v4();
+                                              await FirebaseFirestore.instance
+                                                  .collection('tasks')
+                                                  .doc(widget.taskID)
+                                                  .update({
+                                                'taskComments':
+                                                    FieldValue.arrayUnion([
+                                                  {
+                                                    //There was a bug here we should upload the current logged in user
+                                                    //instead of the uploader ID
+                                                    'userId': _uid,
+                                                    'commentId': _generatedId,
+                                                    //and for the name it was the author name
+                                                    //it should be the current logged in username
+                                                    'name': _loggedUserName,
+                                                    //Also we need to change the image
+                                                    'userImageUrl':
+                                                        _loggedInUserImageUrl,
+                                                    'commentBody':
+                                                        _commentController.text,
+                                                    'time': Timestamp.now(),
+                                                  }
+                                                ]),
+                                              });
+                                              await Fluttertoast.showToast(
+                                                  msg:
+                                                      "Your comment has been added",
+                                                  toastLength:
+                                                      Toast.LENGTH_LONG,
+                                                  // gravity: ToastGravity.,
+                                                  backgroundColor: Colors.grey,
+                                                  fontSize: 18.0);
+                                              _commentController.clear();
+                                            }
+                                            setState(() {});
+                                          },
                                           color: Colors.pink.shade700,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
+                                              borderRadius:
+                                                  BorderRadius.circular(8)),
                                           child: Text(
                                             'Post',
                                             style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                            ),
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14),
                                           ),
                                         ),
                                       ),
                                       TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _isCommenting = !_isCommenting;
-                                          });
-                                        },
-                                        child: Text('Cancel'),
-                                      ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _isCommenting = !_isCommenting;
+                                            });
+                                          },
+                                          child: Text('Cancel'))
                                     ],
                                   ))
                                 ],
@@ -305,49 +470,64 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                                   color: Colors.pink.shade700,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(13),
-                                  ),
+                                      borderRadius: BorderRadius.circular(13)),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        vertical: 10.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'Add a comment',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      ],
+                                        vertical: 14),
+                                    child: Text(
+                                      'Addd a Comment',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14),
                                     ),
                                   ),
                                 ),
                               ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 40,
                       ),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return CommentWidget();
-                        },
-                        separatorBuilder: (context, index) {
-                          return Divider(
-                            thickness: 1,
-                          );
-                        },
-                        itemCount: 15,
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
+                      FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('tasks')
+                              .doc(widget.taskID)
+                              .get(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(child: CircularProgressIndicator());
+                            } else {
+                              if (snapshot.data == null) {
+                                Center(child: Text('No Comment for this task'));
+                              }
+                            }
+                            return ListView.separated(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemBuilder: (context, index) {
+                                  return CommentWidget(
+                                    commentId: snapshot.data!['taskComments']
+                                        [index]['commentId'],
+                                    commenterId: snapshot.data!['taskComments']
+                                        [index]['userId'],
+                                    commentBody: snapshot.data!['taskComments']
+                                        [index]['commentBody'],
+                                    commenterImageUrl:
+                                        snapshot.data!['taskComments'][index]
+                                            ['userImageUrl'],
+                                    commenterName: snapshot
+                                        .data!['taskComments'][index]['name'],
+                                  );
+                                },
+                                separatorBuilder: (context, index) {
+                                  return Divider(
+                                    thickness: 1,
+                                  );
+                                },
+                                itemCount:
+                                    snapshot.data!['taskComments'].length);
+                          })
                     ],
                   ),
                 ),

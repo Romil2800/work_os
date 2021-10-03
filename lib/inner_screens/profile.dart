@@ -168,8 +168,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _isSameUser
                               ? Center()
                               : Divider(
-                            thickness: 1,
-                          ),
+                                  thickness: 1,
+                                ),
                           SizedBox(
                             height: 20,
                           ),
@@ -203,63 +203,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _isSameUser
                               ? Center()
                               : SizedBox(
-                            height: 25,
-                          ),
-                           _isSameUser
+                                  height: 25,
+                                ),
+                          _isSameUser
                               ? Center()
                               : Divider(
-                            thickness: 1,
-                          ),
+                                  thickness: 1,
+                                ),
                           _isSameUser
                               ? Center()
                               : SizedBox(
-                            height: 25,
-                          ),
-                        !_isSameUser?Center(): Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 30),
-                              child: MaterialButton(
-                                onPressed: () {
-                                  _auth.signOut();
-
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => UserState()));
-                                },
-                                color: Colors.pink.shade700,
-                                elevation: 8,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(13),
+                                  height: 25,
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 14.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.logout,
-                                        color: Colors.white,
+                          !_isSameUser
+                              ? Center()
+                              : Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 30),
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        _auth.signOut();
+
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserState()));
+                                      },
+                                      color: Colors.pink.shade700,
+                                      elevation: 8,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(13),
                                       ),
-                                      SizedBox(
-                                        width: 8,
-                                      ),
-                                      Text(
-                                        'Logout',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 14.0),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.logout,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(
+                                              width: 8,
+                                            ),
+                                            Text(
+                                              'Logout',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          )
+                                )
                         ],
                       ),
                     ),
