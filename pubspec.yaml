@@ -38,11 +38,25 @@ dependencies:
   uuid: ^3.0.4
   fluttertoast: ^8.0.8
   flutter_launcher_icons: ^0.9.2
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 4d8ddbdca12a001fcd6957b70a14b6f7d1478e0f
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  adaptive_icon_background: "#191919"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+  
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

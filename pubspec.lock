@@ -7,7 +7,11 @@ packages:
       name: archive
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "3.1.9"
+=======
+    version: "3.1.5"
+>>>>>>> 4d8ddbdca12a001fcd6957b70a14b6f7d1478e0f
   args:
     dependency: transitive
     description:
@@ -274,7 +278,11 @@ packages:
       name: image
       url: "https://pub.dartlang.org"
     source: hosted
+<<<<<<< HEAD
     version: "3.1.1"
+=======
+    version: "3.0.8"
+>>>>>>> 4d8ddbdca12a001fcd6957b70a14b6f7d1478e0f
   image_cropper:
     dependency: "direct main"
     description:
