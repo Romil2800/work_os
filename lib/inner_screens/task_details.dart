@@ -475,7 +475,7 @@ class _TaskDetailsScreenState extends State<TaskDetailsScreen> {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 14),
                                     child: Text(
-                                      'Addd a Comment',
+                                      'Add a Comment',
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,

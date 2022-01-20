@@ -9,10 +9,10 @@ class UserState extends StatelessWidget {
     return StreamBuilder(
       builder: (context, userSnapshot) {
         if (userSnapshot.data == null) {
-          print('user is not sign in');
+         // print('user is not sign in');
           return Login();
         } else if (userSnapshot.hasData) {
-          print('user is already sign in');
+         // print('user is already sign in');
           return TasksScreen();
         } else if (userSnapshot.hasError) {
           return Scaffold(

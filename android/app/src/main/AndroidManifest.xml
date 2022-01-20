@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.work_os">
+    package="romilp.work_os">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="work_os"
         android:icon="@mipmap/ic_launcher">
